@@ -1,5 +1,5 @@
 const { Resend } = require('resend');
-const algorithms = require('../data/algorithms.js');
+const algorithms = require('../algorithms/index.js');
 
 module.exports = async function handler(req, res) {
   // Helper for sending JSON
@@ -57,7 +57,6 @@ module.exports = async function handler(req, res) {
                 .replace(/>/g, '&gt;')
             }</code></pre>
           </div>
-          <p style="font-size: 12px; color: #64748b; margin-top: 32px;">Sent automatically via Vercel Cron Jobs.</p>
         </div>
       `,
     });

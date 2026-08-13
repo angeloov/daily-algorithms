@@ -2,7 +2,10 @@
   "builds": [
     {
       "src": "api/cron.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "algorithms/*.cpp"
+      }
     }
   ],
   "routes": [
