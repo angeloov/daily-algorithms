@@ -13,11 +13,13 @@ const algorithmsData = files.map(file => {
   // Extract TITLE and DESCRIPTION from comments
   const titleMatch = content.match(/TITLE:\s*(.*)/);
   const descMatch = content.match(/DESCRIPTION:\s*(.*)/);
-  
+  // Remove the comment block from the beginning of the file so it doesn't show up in the email
+  const cleanCode = content.replace(/^\/\*[\s\S]*?\*\/\s*/, '');
+
   return {
     name: titleMatch ? titleMatch[1].trim() : path.basename(file, '.cpp'),
     description: descMatch ? descMatch[1].trim() : 'No description provided.',
-    code: content
+    code: cleanCode
   };
 });
 
