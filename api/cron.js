@@ -2,23 +2,24 @@ const { Resend } = require('resend');
 const algorithms = require('../data/algorithms.js');
 
 module.exports = async function handler(req, res) {
-  // Check if environment variables are configured
-  if (!process.env.RESEND_API_KEY) {
-    return res.status(500).json({ error: 'RESEND_API_KEY environment variable is missing.' });
-  }
-  if (!process.env.RECIPIENT_EMAIL) {
-    return res.status(500).json({ error: 'RECIPIENT_EMAIL environment variable is missing.' });
-  }
-
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  // Check the authorization header to prevent unauthorized runs
-  // Vercel Cron sends a secret along with the request that we can verify
-  const authHeader = req.headers.authorization;
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
   try {
+    // Check if environment variables are configured
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({ error: 'RESEND_API_KEY environment variable is missing.' });
+    }
+    if (!process.env.RECIPIENT_EMAIL) {
+      return res.status(500).json({ error: 'RECIPIENT_EMAIL environment variable is missing.' });
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    
+    // Check the authorization header to prevent unauthorized runs
+    // Vercel Cron sends a secret along with the request that we can verify
+    const authHeader = req.headers.authorization;
+    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     // Calculate which algorithm to send based on the current date
     const today = new Date();
     // Days since UNIX epoch
@@ -56,7 +57,11 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({ message: 'Email sent successfully!', data });
   } catch (error) {
-    console.error('Unhandled error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Crash Caught:', error);
+    return res.status(500).json({ 
+      error: 'Function crashed unexpectedly.', 
+      message: error.message, 
+      stack: error.stack 
+    });
   }
 };
