@@ -7,32 +7,39 @@ module.exports = async function handler(req, res) {
   };
 
   try {
+    console.log('--- CRON JOB STARTED ---');
     const { Resend } = require('resend');
     const algorithms = require('../data/algorithms.js');
     
-    // Check if environment variables are configured
+    console.log('Checking environment variables...');
     if (!process.env.RESEND_API_KEY) {
+      console.log('ERROR: RESEND_API_KEY missing');
       return sendJson(500, { error: 'RESEND_API_KEY environment variable is missing.' });
     }
     if (!process.env.RECIPIENT_EMAIL) {
+      console.log('ERROR: RECIPIENT_EMAIL missing');
       return sendJson(500, { error: 'RECIPIENT_EMAIL environment variable is missing.' });
     }
+    console.log('Environment variables present.');
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     
-    // Check the authorization header to prevent unauthorized runs
+    console.log('Checking authorization...');
     const authHeader = req.headers.authorization;
     if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      console.log('ERROR: Unauthorized. Provided header:', authHeader);
       return sendJson(401, { error: 'Unauthorized' });
     }
+    console.log('Authorization passed.');
 
-    // Calculate which algorithm to send based on the current date
     const today = new Date();
     const daysSinceEpoch = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
     const algorithmIndex = daysSinceEpoch % algorithms.length;
     
     const algorithm = algorithms[algorithmIndex];
+    console.log(`Prepared algorithm: ${algorithm.name}`);
 
+    console.log('Attempting to send email via Resend...');
     const { data, error } = await resend.emails.send({
       from: 'Daily Algorithm <onboarding@resend.dev>', // You can change this if you verify a domain on Resend
       to: [process.env.RECIPIENT_EMAIL],
