@@ -1,9 +1,16 @@
 const { Resend } = require('resend');
 const algorithms = require('../data/algorithms.js');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 module.exports = async function handler(req, res) {
+  // Check if environment variables are configured
+  if (!process.env.RESEND_API_KEY) {
+    return res.status(500).json({ error: 'RESEND_API_KEY environment variable is missing.' });
+  }
+  if (!process.env.RECIPIENT_EMAIL) {
+    return res.status(500).json({ error: 'RECIPIENT_EMAIL environment variable is missing.' });
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
   // Check the authorization header to prevent unauthorized runs
   // Vercel Cron sends a secret along with the request that we can verify
   const authHeader = req.headers.authorization;
