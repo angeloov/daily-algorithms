@@ -1,8 +1,8 @@
-const { Resend } = require('resend');
-const algorithms = require('../data/algorithms.js');
-
 module.exports = async function handler(req, res) {
   try {
+    const { Resend } = require('resend');
+    const algorithms = require('../data/algorithms.js');
+    
     // Check if environment variables are configured
     if (!process.env.RESEND_API_KEY) {
       return res.status(500).json({ error: 'RESEND_API_KEY environment variable is missing.' });
