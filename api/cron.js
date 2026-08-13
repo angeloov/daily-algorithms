@@ -1,28 +1,33 @@
 module.exports = async function handler(req, res) {
+  // Helper for sending JSON
+  const sendJson = (statusCode, data) => {
+    res.statusCode = statusCode;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(data));
+  };
+
   try {
     const { Resend } = require('resend');
     const algorithms = require('../data/algorithms.js');
     
     // Check if environment variables are configured
     if (!process.env.RESEND_API_KEY) {
-      return res.status(500).json({ error: 'RESEND_API_KEY environment variable is missing.' });
+      return sendJson(500, { error: 'RESEND_API_KEY environment variable is missing.' });
     }
     if (!process.env.RECIPIENT_EMAIL) {
-      return res.status(500).json({ error: 'RECIPIENT_EMAIL environment variable is missing.' });
+      return sendJson(500, { error: 'RECIPIENT_EMAIL environment variable is missing.' });
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     
     // Check the authorization header to prevent unauthorized runs
-    // Vercel Cron sends a secret along with the request that we can verify
     const authHeader = req.headers.authorization;
     if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return sendJson(401, { error: 'Unauthorized' });
     }
 
     // Calculate which algorithm to send based on the current date
     const today = new Date();
-    // Days since UNIX epoch
     const daysSinceEpoch = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
     const algorithmIndex = daysSinceEpoch % algorithms.length;
     
@@ -38,7 +43,6 @@ module.exports = async function handler(req, res) {
           <p style="font-size: 16px; line-height: 1.5;">${algorithm.description}</p>
           <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; overflow-x: auto;">
             <pre style="margin: 0; font-family: monospace; font-size: 14px; color: #1e293b;"><code>${
-              // HTML escape for safety
               algorithm.code
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -52,16 +56,18 @@ module.exports = async function handler(req, res) {
 
     if (error) {
       console.error('Error sending email:', error);
-      return res.status(500).json({ error });
+      return sendJson(500, { error });
     }
 
-    return res.status(200).json({ message: 'Email sent successfully!', data });
+    return sendJson(200, { message: 'Email sent successfully!', data });
   } catch (error) {
     console.error('Crash Caught:', error);
-    return res.status(500).json({ 
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ 
       error: 'Function crashed unexpectedly.', 
       message: error.message, 
       stack: error.stack 
-    });
+    }));
   }
 };

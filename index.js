@@ -1,3 +1,5 @@
 module.exports = (req, res) => {
-  res.status(200).send('Daily Algorithms Email Service is active.');
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Daily Algorithms Email Service is active.');
 };
