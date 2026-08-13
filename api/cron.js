@@ -1,3 +1,6 @@
+const { Resend } = require('resend');
+const algorithms = require('../data/algorithms.js');
+
 module.exports = async function handler(req, res) {
   // Helper for sending JSON
   const sendJson = (statusCode, data) => {
@@ -8,8 +11,6 @@ module.exports = async function handler(req, res) {
 
   try {
     console.log('--- CRON JOB STARTED ---');
-    const { Resend } = require('resend');
-    const algorithms = require('../data/algorithms.js');
     
     console.log('Checking environment variables...');
     if (!process.env.RESEND_API_KEY) {
